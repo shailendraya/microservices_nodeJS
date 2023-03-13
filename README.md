@@ -1,1 +1,2 @@
-# microservices_nodeJS
+# Defination 
+Microservices is a service-oriented architecture pattern wherein applications are built as a collection of various smallest independent service units. It is a software engineering approach that focuses on decomposing an application into single-function modules with well-defined interfaces.
