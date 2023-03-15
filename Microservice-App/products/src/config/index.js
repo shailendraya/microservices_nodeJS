@@ -11,10 +11,10 @@ console.log('Database connections---->', process.env.PORT, process.env.MONGODB_U
 const APP_SECRET ='jg_youtube_tutorial'
 
 // # Mongo DB
-const MONGODB_URI='mongodb://localhost:27017/amazon_demo'
+const MONGODB_URI='mongodb://localhost:27017/ms_product'
 
 // # Port
-const PORT=8000
+const PORT=8002
 module.exports = {
   PORT: PORT,
   DB_URL: MONGODB_URI,
