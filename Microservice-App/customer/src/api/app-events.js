@@ -1,7 +1,8 @@
 const CustomerService = require("../services/customer-service");
 
 module.exports = (app) => {
-    
+    try{
+        console.log('customer---->')
     const service = new CustomerService();
     app.use('/app-events',async (req,res,next) => {
 
@@ -10,10 +11,14 @@ module.exports = (app) => {
         //handle subscribe events
         service.SubscribeEvents(payload);
 
-        console.log("============= Shopping ================");
+        console.log("============= Customer service invoked ================");
         console.log(payload);
         res.json(payload);
 
     });
+} catch (err){
+    console.log('customer appEvent error-->', err)
+    throw(err)
+}
 
 }
