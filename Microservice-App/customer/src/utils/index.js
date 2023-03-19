@@ -1,7 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const amqplib = require('amqplib');
 
-const { APP_SECRET } = require("../config");
+const {APP_SECRET, MESSAGE_BROKER_URL, EXCHANGE_NAME, QUEUE_NAME, CUSTOMER_BINDING_KEY} = require('../config')
 
 //Utility functions
 module.exports.GenerateSalt = async () => {
@@ -48,4 +49,44 @@ module.exports.FormateData = (data) => {
   } else {
     throw new Error("Data Not found!");
   }
+};
+
+// ====================== Message Broker Logic ===================
+
+module.exports.CreateChannel = async () => {
+  try {
+    const connection = await amqplib.connect(MESSAGE_BROKER_URL);
+    const channel = await connection.createChannel();
+    await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
+    console.log('Create Channel customer--->', channel)
+    return channel;
+  } catch (err) {
+    console.log('Customer create channel error-->', err)
+    throw err;
+  }
+};
+
+// module.exports.PublishMessage = async (channel, service, msg) => {
+//   try{
+//     await channel.publish(EXCHANGE_NAME, service, Buffer.from(msg));
+//     console.log("Sent: ", msg);
+//   } catch(err){
+//     throw err;
+//   }
+// };
+
+module.exports.SubscribeMessage = async (channel, service ) => {
+  try{
+  const appQueue = await channel.assertQueue(QUEUE_NAME);
+
+  await channel.bindQueue(appQueue.queue, EXCHANGE_NAME, CUSTOMER_BINDING_KEY);
+
+  await channel.consume(appQueue.queue, data => {
+    console.log('Received data');
+    console.log('data', data);
+    console.log('data 2', data.content.toString());
+  })
+} catch(err){
+  console.log('customer subscribe error--->', err)
+}
 };

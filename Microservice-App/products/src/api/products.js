@@ -1,8 +1,14 @@
 const ProductService = require('../services/product-service');
 const UserAuth = require('./middlewares/auth')
-const { PublishCustomerEvent, PublishShoppingEvent} = require('../utils')
-module.exports = (app) => {
-    
+// const { PublishCustomerEvent, PublishShoppingEvent} = require('../utils')
+
+const {PublishMessage} = require('../utils')
+
+const {CUSTOMER_BINDING_KEY, SHOPPING_BINDING_KEY} = require('../config');
+
+
+module.exports = (app, channel) => {
+    console.log('shop channel--->', channel)
     const service = new ProductService();
 
     app.post('/product/create', async(req,res,next) => {
@@ -72,8 +78,9 @@ module.exports = (app) => {
                 "ADD_TO_WISHLIST"
             );
             // console.log('product wishlist1', data)
-            PublishCustomerEvent(JSON.stringify(data));
-            // PublishMessage(channel, CUSTOMER_SERVICE, JSON.stringify(data));
+            // PublishCustomerEvent(JSON.stringify(data)); //  for webhook/http call approach 
+
+            PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
            // console.log('product wishlist2', data.data.product)
 
             res.status(200).json(data.data.product);
@@ -95,7 +102,9 @@ module.exports = (app) => {
                 "REMOVE_FROM_WISHLIST"
             );
             
-            PublishCustomerEvent(data);
+            // PublishCustomerEvent(data);
+            PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
+
             return res.status(200).json(data.data.product);
         } catch (err) {
             next(err)
@@ -116,8 +125,8 @@ app.put("/cart", UserAuth, async (req, res, next) => {
     PublishCustomerEvent(JSON.stringify(data));
     PublishShoppingEvent(JSON.stringify(data));
 
-    // PublishMessage(channel, CUSTOMER_SERVICE, JSON.stringify(data));
-    // PublishMessage(channel, SHOPPING_SERVICE, JSON.stringify(data));
+    PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
+    PublishMessage(channel, SHOPPING_BINDING_KEY, JSON.stringify(data));
 
     const response = { product: data.data.product, unit: data.data.qty };
 
@@ -139,11 +148,11 @@ app.put("/cart", UserAuth, async (req, res, next) => {
             "REMOVE_FROM_CART"
             );
 
-            PublishCustomerEvent(data);
-            PublishShoppingEvent(data);
+            // PublishCustomerEvent(data);
+            // PublishShoppingEvent(data);
 
-            // PublishMessage(channel, CUSTOMER_SERVICE, JSON.stringify(data));
-            // PublishMessage(channel, SHOPPING_SERVICE, JSON.stringify(data));
+            PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
+            PublishMessage(channel, SHOPPING_BINDING_KEY, JSON.stringify(data));
 
             const response = { product: data.data.product, unit: data.data.qty };
 
