@@ -1,8 +1,10 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+const amqplib = require("amqplib");
 
-const { APP_SECRET } = require("../config");
+const {APP_SECRET, MESSAGE_BROKER_URL, EXCHANGE_NAME, QUEUE_NAME, SHOPPING_BINDING_KEY} = require('../config')
+
 
 //Utility functions
 module.exports.GenerateSalt = async () => {
@@ -51,14 +53,63 @@ module.exports.FormateData = (data) => {
   }
 };
 
-module.exports.PublishCustomerEvent = async (payload) => {
-  axios.post("http://customer:8001/customer/app-events/", {
-    payload,
-  });
-};
+// module.exports.PublishCustomerEvent = async (payload) => {
+//   axios.post("http://customer:8001/customer/app-events/", {
+//     payload,
+//   });
+// };
 
 // module.exports.PublishShoppingEvent = async (payload) => {
 //   axios.post(`http://shopping:8003/app-events/`, {
 //     payload,
 //   });
 // };
+
+module.exports.CreateChannel = async () => {
+  try {
+    const connection = await amqplib.connect(MESSAGE_BROKER_URL);
+    const channel = await connection.createChannel();
+    await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
+    //console.log('Create Channel customer--->', channel)
+    return channel;
+  } catch (err) {
+    console.log('Shopping create channel error-->', err)
+    throw err;
+  }
+};
+
+module.exports.PublishMessage = (channel, service, msg) => {
+  channel.publish(EXCHANGE_NAME, service, Buffer.from(msg));
+  console.log("Sent from Shopping: ", msg);
+};
+
+module.exports.SubscribeMessage = async (channel, service) => {
+  await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
+  const q = await channel.assertQueue(QUEUE_NAME, { exclusive: true });
+  console.log(` Waiting for messages in shopping queue: ${q.queue}`);
+
+  channel.bindQueue(q.queue, EXCHANGE_NAME, SHOPPING_BINDING_KEY);
+  // const appQueue = await channel.assertQueue(QUEUE_NAME);
+
+  // await channel.bindQueue(appQueue.queue, EXCHANGE_NAME, SHOPPING_BINDING_KEY);
+
+  // await channel.consume(appQueue.queue, data => {
+  //   console.log('Received data in customer');
+  //   console.log('data', data);
+  //   console.log('data 2', data.content.toString());
+  // })
+
+  channel.consume(
+    q.queue,
+    (msg) => {
+      if (msg.content) {
+        console.log("the message is:", msg.content.toString());
+        service.SubscribeEvents(msg.content.toString());
+      }
+      console.log("Shopping channel data received");
+    },
+    {
+      noAck: true,
+    }
+  );
+};

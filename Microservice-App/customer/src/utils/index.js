@@ -58,12 +58,35 @@ module.exports.CreateChannel = async () => {
     const connection = await amqplib.connect(MESSAGE_BROKER_URL);
     const channel = await connection.createChannel();
     await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
-    console.log('Create Channel customer--->', channel)
+    //console.log('Create Channel customer--->', channel)
     return channel;
   } catch (err) {
     console.log('Customer create channel error-->', err)
     throw err;
   }
+};
+
+
+module.exports.SubscribeMessage = async (channel, service) => {
+  await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
+  const q = await channel.assertQueue(QUEUE_NAME, { exclusive: true });
+  console.log(` Waiting for messages in queue: ${q.queue}`);
+
+  channel.bindQueue(q.queue, EXCHANGE_NAME, CUSTOMER_BINDING_KEY);
+
+  channel.consume(
+    q.queue,
+    (msg) => {
+      if (msg.content) {
+        console.log("the message is:", msg.content.toString());
+        service.SubscribeEvents(msg.content.toString());
+      }
+      console.log("[X] received");
+    },
+    {
+      noAck: true,
+    }
+  );
 };
 
 // module.exports.PublishMessage = async (channel, service, msg) => {
@@ -75,18 +98,19 @@ module.exports.CreateChannel = async () => {
 //   }
 // };
 
-module.exports.SubscribeMessage = async (channel, service ) => {
-  try{
-  const appQueue = await channel.assertQueue(QUEUE_NAME);
+// module.exports.SubscribeMessage = async (channel, service ) => {
+//   try{
+//   const appQueue = await channel.assertQueue(QUEUE_NAME);
 
-  await channel.bindQueue(appQueue.queue, EXCHANGE_NAME, CUSTOMER_BINDING_KEY);
+//   await channel.bindQueue(appQueue.queue, EXCHANGE_NAME, CUSTOMER_BINDING_KEY);
 
-  await channel.consume(appQueue.queue, data => {
-    console.log('Received data');
-    console.log('data', data);
-    console.log('data 2', data.content.toString());
-  })
-} catch(err){
-  console.log('customer subscribe error--->', err)
-}
-};
+//   await channel.consume(appQueue.queue, data => {
+//     console.log('Received data in customer');
+//     console.log('data', data);
+//     console.log('data 2', data.content.toString());
+//   })
+// } catch(err){
+//   console.log('customer subscribe error--->', err)
+// }
+// };
+

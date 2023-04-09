@@ -13,10 +13,17 @@ const APP_SECRET ='jg_youtube_tutorial'
 // # Mongo DB
 const MONGODB_URI='mongodb://localhost:27017/ms_shopping'
 
+const MESSAGE_BROKER_URL = 'amqp://localhost'
+
 // # Port
 const PORT=8003
 module.exports = {
   PORT: PORT,
   DB_URL: MONGODB_URI,
   APP_SECRET: APP_SECRET,
+  MESSAGE_BROKER_URL: MESSAGE_BROKER_URL,
+  EXCHANGE_NAME: 'ONLINE_SHOPPING',
+  SHOPPING_BINDING_KEY: 'SHOPPING_SERVICE',
+  CUSTOMER_BINDING_KEY: 'CUSTOMER_SERVICE',
+  QUEUE_NAME: 'SHOPPING_QUEUE',
 };

@@ -8,7 +8,7 @@ const {CUSTOMER_BINDING_KEY, SHOPPING_BINDING_KEY} = require('../config');
 
 
 module.exports = (app, channel) => {
-    console.log('shop channel--->', channel)
+    // console.log('shop channel--->', channel)
     const service = new ProductService();
 
     app.post('/product/create', async(req,res,next) => {
@@ -122,8 +122,8 @@ app.put("/cart", UserAuth, async (req, res, next) => {
       "ADD_TO_CART"
     );
 
-    PublishCustomerEvent(JSON.stringify(data));
-    PublishShoppingEvent(JSON.stringify(data));
+    // PublishCustomerEvent(JSON.stringify(data));
+    // PublishShoppingEvent(JSON.stringify(data));
 
     PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
     PublishMessage(channel, SHOPPING_BINDING_KEY, JSON.stringify(data));

@@ -90,9 +90,9 @@ class CustomerService {
 
     async SubscribeEvents(payload){
  
-        console.log('Triggering.... Customer Events')
-console.log('payload-->', JSON.stringify(payload))
-        payload = JSON.parse(JSON.stringify(payload))
+        console.log('Triggering.... Customer Events getting payload')
+
+        payload = JSON.parse(payload)
 
         const { event, data } =  payload;
 
@@ -112,13 +112,43 @@ console.log('payload-->', JSON.stringify(payload))
             case 'CREATE_ORDER':
                 this.ManageOrder(userId,order);
                 break;
-            case 'TESTING':
-                console.log('testing---')
             default:
                 break;
         }
  
     }
+
+//     async SubscribeEvents(payload){
+ 
+//         console.log('Triggering.... Customer Events')
+// console.log('payload-->', JSON.stringify(payload))
+//         // payload = JSON.parse(JSON.stringify(payload))
+// console.log('Customer got payload-->', payload)
+//         const { event, data } =  payload;
+
+//         const { userId, product, order, qty } = data;
+
+//         switch(event){
+//             case 'ADD_TO_WISHLIST':
+//             case 'REMOVE_FROM_WISHLIST':
+//                 this.AddToWishlist(userId,product)
+//                 break;
+//             case 'ADD_TO_CART':
+//                 this.ManageCart(userId,product, qty, false);
+//                 break;
+//             case 'REMOVE_FROM_CART':
+//                 this.ManageCart(userId,product,qty, true);
+//                 break;
+//             case 'CREATE_ORDER':
+//                 this.ManageOrder(userId,order);
+//                 break;
+//             case 'TESTING':
+//                 console.log('testing---')
+//             default:
+//                 break;
+//         }
+ 
+//     }
 
 }
 
